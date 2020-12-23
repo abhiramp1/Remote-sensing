@@ -6,7 +6,7 @@ Created on Sun Nov 22 11:28:51 2020
 """
 
 # example usage of landsat tool
-# Mitchell Sawtelle
+
 
 # initiate timer
 
@@ -14,13 +14,13 @@ import time
 import json
 
 
-
+import os
 
 # input file containing site names and locations (formatting needed)
 filename = r"E:\OneDrive - Oklahoma A and M System\Oklahoma State University\GRA\Water quality monitoring\Landsat\SpatialData\grandlake.csv"
 
 # destination directory where landsat images will be downloaded
-destination = r'E:\test\sentinel'
+destination = r'E:\OneDrive - Oklahoma A and M System\Oklahoma State University\GRA\Water quality monitoring\Sentinel\Grand_lake_sentinel'
 
 # login information for the USGS Earth Explorer Website
 username = 'abhiramp1'
@@ -30,10 +30,11 @@ dataset = "SENTINEL_2A"
 user = (username, password)
 
 # start and end date (formatting must be the same YYYY-MO-DA)
-start = '2016-01-01'
-end   = '2016-03-30'
+start = '2015-07-01'
+end   = '2020-11-30'
 
 #from Landsat_tool import Landsat_Tool
+#os.chdir(r"C:\Users\sridh\Desktop\test")
 from Sentinel_tool import Sentinel_Tool
 
 # create the landsat extraction tool and login
@@ -46,17 +47,20 @@ l.login()
 # matches is a list of the available product ids
 URLs_return = l.search(filename, start, end)
 # print('Possible scenes include:')
-# print(URLs_return)
+print(URLs_return)
 
 all_links=[]
 for j,i in enumerate(URLs_return):
-    links = l.download_sentinel(destination,i)
+    link_fmt = l.sentinel_url_constructor(destination,i)
+    links = l.url_band_constructor(link_fmt)
     all_links.append(links)
-print(all_links[1])
+# print(all_links[2])
 
-for url in all_links[2]:
-    l.download(url)
-    time.sleep(2)
+for url in all_links:
+    print(url,"URL..............")
+    for i in url:
+        l.download(i)
+        time.sleep(2)
 # l.download('https://console.cloud.google.com/storage/browser/_details/gcp-public-data-sentinel-2/tiles/15/S/UA/S2A_MSIL1C_20150806T171225_N0202_R069_T15SUA_20160517T083719.SAFE/GRANULE/S2A_OPER_MSI_L1C_TL_EPA__20160516T202538_A000638_T15SUA_N02.02/IMG_DATA/S2A_OPER_MSI_L1C_TL_EPA__20160516T202538_A000638_T15SUA_B01.jp2')
         
     

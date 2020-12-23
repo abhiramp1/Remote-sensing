@@ -1,19 +1,22 @@
 #Landsat_Tool for downloading landsat scenes
 import csv
-from selenium import webdriver
+#from selenium import webdriver
 import json
 import glob
 from usgs import api
 import requests
 import os
 import shapefile
-import rasterio
+# import rasterio
 import tarfile
+#import wget
 import numpy
-import matplotlib.pyplot as plt
-from rasterio.mask import mask
+#import matplotlib.pyplot as plt
+# from rasterio.mask import mask
 from urllib.request import urlopen
 import xml.etree.ElementTree as ET
+# import gsutil
+#import subprocess
 
 class Sentinel_Tool(object):
     '''
@@ -101,7 +104,7 @@ class Sentinel_Tool(object):
                 tile = r.get("summary").split(',')[3].split(':')[1]
                 if float(cloud_cover) < 10.0:
                     final_candidates.append((data_access_url,tile,disp_id))
-
+            print(final_candidates)
             return final_candidates
         
     def productid(self,url):
@@ -126,13 +129,13 @@ class Sentinel_Tool(object):
                 if child.attrib['name'] == 'Vendor Tile ID':
                     return(list(child)[0].text)
                 
-    def download_sentinel(self,destination,url):
+    def sentinel_url_constructor(self,destination,url):
         self.title = url[1]
         # self.download(url[0])
         self.display_id = url[2]
         self.product_id = self.productid(url[0])
         if self.display_id.startswith("L1C"):
-            print("********IN LIC*****************")
+            #print("********IN LIC*****************")
             #https://console.cloud.google.com/storage/browser/gcp-public-data-sentinel-2/tiles/15/S/UA/S2A_MSIL1C_20161221T171722_N0204_R112_T15SUA_20161221T172206.SAFE
             tile1 =self.title[2:4]
             tile2 = self.title[4]
@@ -140,7 +143,7 @@ class Sentinel_Tool(object):
             datef = self.product_id.split('_')[2].lstrip()
             #print(tile1,tile2,tile3,self.product_id,self.display_id)
             # self.sentinel_url = 'https://console.cloud.google.com/storage/browser/_details/gcp-public-data-sentinel-2/tiles/{}/{}/{}/{}.SAFE/GRANULE/{}/IMG_DATA/{}_{}_B0{}.jp2'
-            self.sentinel_url = 'https://console.cloud.google.com/storage/browser/_details/gcp-public-data-sentinel-2/tiles/{}/{}/{}/{}.SAFE/GRANULE/{}/IMG_DATA/{}_{}_'
+            self.sentinel_url = 'https://storage.googleapis.com/gcp-public-data-sentinel-2/tiles/{}/{}/{}/{}.SAFE/GRANULE/{}/IMG_DATA/{}_{}'
             x =self.sentinel_url.format(tile1,tile2,tile3,self.product_id,self.display_id,self.title.lstrip(),datef)
             # print(x)
         else:
@@ -151,7 +154,8 @@ class Sentinel_Tool(object):
             tile_id = self.tileid(url[0])
             #storing vendor product item elemts by splitting _
             # base_url = 'https://console.cloud.google.com/storage/browser/gcp-public-data-sentinel-2/tiles/'
-            base_url ='https://console.cloud.google.com/gcp-public-data-sentinel-2/tiles/'
+            # base_url ='https://console.cloud.google.com/gcp-public-data-sentinel-2/tiles/'
+            base_url ='https://storage.googleapis.com/gcp-public-data-sentinel-2/tiles/'
                    
             ven_idsp = product_id.split('_')
             tile_idsp = tile_id.split('_')
@@ -159,10 +163,12 @@ class Sentinel_Tool(object):
             pro_id = "S2A_MSIL1C_"+ven_idsp[-1] + '_' + tile_idsp[-1].replace(".","") + '_' + ven_idsp[6] + '_' + tile_idsp[-2] + '_' + ven_idsp[5] 
             # print(pro_id,"Prod ID")
             til_id = tile_id.replace("_"+tile_idsp[-1],"") 
-            self.sentinel_url = base_url + '{}/{}/{}/{}.SAFE/GRANULE/{}/IMG_DATA/{}_B0{}.jp2'
+            # self.sentinel_url = base_url + '{}/{}/{}/{}.SAFE/GRANULE/{}/IMG_DATA/{}_B0{}.jp2'
             self.sentinel_url = base_url + '{}/{}/{}/{}.SAFE/GRANULE/{}/IMG_DATA/{}'
             x =self.sentinel_url.format(tile1,tile2,tile3,pro_id,tile_id,til_id)
             # print(x)
+        return x
+    def url_band_constructor(self,x):
         bands=[]
         if not x == '':
             for i in range(1,13):
@@ -206,43 +212,6 @@ class Sentinel_Tool(object):
         print('scenes which meet the desired cloud cover percentage of less than or equal to {}% are:\n'.format(percent_cloud_cover), candidates)
         return candidates
 
-    def metadata_url_constructor(self,productid):
-        '''
-        method to construct the url for the metadata file of scenes
-        productid: type str, productid for landsat image
-        output:
-        returns url of metadata file
-        '''
-        sat = productid[0:4]
-        wrs = productid[10:16]
-        path = wrs[0:3]
-        row = wrs[3:]
-        urltemplate = self.metadata.format(sat,path,row,productid,productid,)
-        return urltemplate
-    # def url_constructor(self,productid,bands=None):
-    #     '''
-    #     method to construct the urls to download scenes from google cloud services
-    #     productid: type str, productid for landsat image
-    #     bands: type list or Nonetype, list of bands desired or if None all bands 1-11
-
-    #     output:
-    #     returns list of urls constructed
-    #     '''
-    #     urls = []
-    #     sat = productid[0:4]
-    #     wrs = productid[10:16]
-    #     path = wrs[0:3]
-    #     row = wrs[3:]
-    #     if bands is None:
-    #         for x in range(1,12):
-    #             urltemplate = self.urltemplate.format(sat,path,row,productid,productid,x)
-    #             urls.append(urltemplate)
-    #     else:
-    #         for x in bands:
-    #             urltemplate = self.urltemplate.format(sat,path,row,productid,productid,x)
-    #             urls.append(urltemplate)
-
-    #     return urls
 
     def download(self,url):
         local_filename = url.split('/')[-1]
