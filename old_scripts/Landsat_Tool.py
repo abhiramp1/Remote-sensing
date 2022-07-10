@@ -8,11 +8,11 @@ from usgs import api
 import requests
 import os
 import shapefile
-import rasterio
+#import rasterio
 import tarfile
 import numpy
 import matplotlib.pyplot as plt
-from rasterio.mask import mask
+#from rasterio.mask import mask
 
 class Landsat_Tool(object):
     '''
@@ -88,7 +88,7 @@ class Landsat_Tool(object):
             dataset = self.dataset
 
         for loc in coordinates:
-            response = api.search(dataset,self.node,lat=float(loc[0]),lng=float(loc[1]),start_date=start,end_date=end)
+            response = api.scene_search(dataset,self.node,lat=float(loc[0]),lng=float(loc[1]),start_date=start,end_date=end)
             data = response['data']
             results = data['results']
             final_candidates = []
