@@ -1,4 +1,4 @@
-#Landsat_Tool for downloading landsat scenes
+#Sentinel tool for downloading Sentinel scenes
 import csv
 #from selenium import webdriver
 import json
