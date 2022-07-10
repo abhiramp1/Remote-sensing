@@ -20,7 +20,7 @@ import xml.etree.ElementTree as ET
 
 class Sentinel_Tool(object):
     '''
-    tool to download landsat scenes from google cloud services
+    tool to download Sentinel scenes from google cloud services
     :params:
 
     user, type tuple, (username, password)
